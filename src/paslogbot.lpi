@@ -84,6 +84,11 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
+    <RequiredPackages>
+      <Item>
+        <PackageName Value="indylaz"/>
+      </Item>
+    </RequiredPackages>
     <Units>
       <Unit>
         <Filename Value="paslogbot.lpr"/>

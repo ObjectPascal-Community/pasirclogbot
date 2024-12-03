@@ -14,6 +14,8 @@ type
 
 { TPasLogBot }
   TPasLogBot = class(TCustomApplication)
+  private
+    FIRCLogBot: TIRCLogBot;
   protected
     procedure DoRun; override;
   public
@@ -108,10 +110,12 @@ begin
   end;
 
   WriteLn('Starting...');
+  FIRCLogBot.Run;
   while not Terminated do
   begin
     Sleep(50);
   end;
+  FIRCLogBot.Shutdown;
   WriteLn('Exiting.');
   // stop program loop
   //Terminate;
@@ -121,10 +125,19 @@ constructor TPasLogBot.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   StopOnException:= True;
+  FIRCLogBot:= TIRCLogBot.Create(
+    '[PasLogBot]',
+    'paslogbot',
+    'Pascal channel IRC log bot',
+    'localhost',
+    6667,
+    '#test'
+  );
 end;
 
 destructor TPasLogBot.Destroy;
 begin
+  FIRCLogBot.Free;
   inherited Destroy;
 end;
 

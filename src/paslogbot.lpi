@@ -23,7 +23,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="bot;config"/>
+            <OtherUnitFiles Value="bot;config;common"/>
             <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -57,7 +57,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="bot;config"/>
+            <OtherUnitFiles Value="bot;config;common"/>
             <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -104,6 +104,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCLogBot.Config"/>
       </Unit>
+      <Unit>
+        <Filename Value="common/irclogbot.common.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IRCLogBot.Common"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -113,7 +118,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="bot;config"/>
+      <OtherUnitFiles Value="bot;config;common"/>
       <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
   </CompilerOptions>

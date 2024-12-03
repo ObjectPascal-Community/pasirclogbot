@@ -75,12 +75,12 @@ begin
   if FileExists(FINIFile) then
   begin
     FINI:= TIniFile.Create(FINIFile);
-    FHost:= FINI.ReadString('Main', 'Host', 'localhost');
-    FPort:= FINI.ReadInteger('Main', 'Port', 6667);
-    FNickName:= FINI.ReadString('Main', 'NickName', '');
-    FUserName:= FINI.ReadString('Main', 'UserName', '');
-    FRealName:= FINI.ReadString('Main', 'RealName', '');
-    FChannel:= FINI.ReadString('Main', 'Channel', '');
+    FHost:= FINI.ReadString('IRC', 'Host', 'localhost');
+    FPort:= FINI.ReadInteger('IRC', 'Port', 6667);
+    FNickName:= FINI.ReadString('IRC', 'NickName', '');
+    FUserName:= FINI.ReadString('IRC', 'UserName', '');
+    FRealName:= FINI.ReadString('IRC', 'RealName', '');
+    FChannel:= FINI.ReadString('IRC', 'Channel', '');
   end
   else
   begin

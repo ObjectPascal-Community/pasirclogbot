@@ -7,7 +7,7 @@ uses
   cThreads,
   BaseUnix,
   {$ENDIF}
-  Classes, SysUtils, CustApp, IRCLogBot.Bot, IRCLogBot.Config
+  Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config
   { you can add units after this };
 
 type
@@ -37,13 +37,13 @@ begin
     SIGTERM, SIGINT:
       begin
         WriteLn;
-        WriteLn('Received termination signal');
+        debug('Received termination signal');
         if Assigned(Application) then
           Application.Terminate;
       end;
     SIGHUP:
       begin
-        //WriteLn('Received SIGHUP - could implement config reload here');
+        //debug('Received SIGHUP - could implement config reload here');
         // Could implement configuration reload here
       end;
   end;
@@ -95,7 +95,7 @@ begin
   // Signal Handling
   SetupSignalHandlers;
   // quick check parameters
-  ErrorMsg:= CheckOptions('hc:', ['help', 'config:']);
+  ErrorMsg:= CheckOptions('hc:d', ['help', 'config:', 'debug']);
   if ErrorMsg<>'' then
   begin
     //ShowException(Exception.Create(ErrorMsg));
@@ -111,6 +111,7 @@ begin
     exit;
   end;
 
+  // Config
   if HasOption('c', 'config') then
   begin
     FConfigFile:= GetOptionValue('c', 'config');
@@ -120,7 +121,10 @@ begin
     FConfigFile:= ConcatPaths([GetUserDir, '.pasirclogbot']);
   end;
 
-  WriteLn(Format('Attempting to read config from: "%s"...', [FConfigFile]));
+  // Debug
+  DebugOn:= HasOption('d', 'debug');
+
+  debug(Format('Attempting to read config from: "%s"...', [FConfigFile]));
 
   { #todo 100 -ogcarreno : Parse param c/config }
   FBotConfig:= TBotConfig.Create(FConfigFile);
@@ -129,14 +133,14 @@ begin
   except
     on e:Exception do
     begin
-      WriteLn(Format('Error: %s', [e.Message]));
+      debug(Format('Error: %s', [e.Message]));
       Terminate;
       exit;
     end;
   end;
 
   { #todo 100 -ogcarreno : Use data from config }
-  WriteLn('Creating IRC client...');
+  debug('Creating IRC client...');
   FIRCLogBot:= TIRCLogBot.Create(
     FBotConfig.Host,
     FBotConfig.Port,
@@ -145,8 +149,8 @@ begin
     FBotConfig.Realname,
     FBotConfig.Channel
   );
-  WriteLn('Successfully created IRC client.');
-  WriteLn('Starting...');
+  debug('Successfully created IRC client.');
+  debug('Starting...');
   { #todo 100 -ogcarreno : Read Config }
   FIRCLogBot.Run;
   while not Terminated do
@@ -155,7 +159,7 @@ begin
   end;
   FIRCLogBot.Shutdown;
   FIRCLogBot.Free;
-  WriteLn('Exiting.');
+  debug('Exiting.');
   // stop program loop
   //Terminate;
 end;
@@ -179,7 +183,13 @@ begin
   WriteLn;
   WriteLn('PARAMS:');
   WriteLn('    -h/--help         This help message.');
-  WriteLn('    -c/--config=FILE  Use provided FILE as config. ( default: ~/.pasirclogbot )');
+  {$IFDEF UNIX}
+  WriteLn('    -c/--config=FILE  Use provided FILE as config. ( default: ~/.config/pasirclogbot.conf )');
+  {$ENDIF}
+  {$IFDEF WINDOWS}
+  WriteLn('    -c/--config=FILE  Use provided FILE as config. ( default: %APPDATA%/pasirclogbot )');
+  {$ENDIF}
+  WriteLn('    -d/--debug        Turn debug On. (default: Off)');
 end;
 
 begin

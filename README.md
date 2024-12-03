@@ -18,3 +18,15 @@ The initial idea is to have all the logging of the `IRC` channel dumped into a `
 2. Via a web site that the bot, itself, serves
 
 Not sure if it's worth having the bot itself serve the website, but due to the fact that `SQLite` will be locked during the bot's operation, then this will have to be the path, for the time being.
+
+# Usage
+
+```console
+$ paslogbot -h
+Usage:
+  paslogbot [PARAMS]
+
+PARAMS:
+    -h/--help         This help message.
+    -c/--config=FILE  Use provided FILE as config. ( default: ~/.pasirclogbot )
+```

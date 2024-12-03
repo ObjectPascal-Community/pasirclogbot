@@ -1,8 +1,8 @@
 # Pascal IRC Log Bot
 
-> [!]Important
+> [!Important]
 > Since I was lazy enough to not bother with the boilerplate, I asked some `AI` bots to help me.\
-> You can find the collected answers on the [reserach](research) folder.
+> You can find the collected answers on the [research](research) folder.
 
 An attempt at producing an `IRC` bot that logs a channel's content.
 

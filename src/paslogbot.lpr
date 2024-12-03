@@ -7,6 +7,9 @@ uses
   cThreads,
   BaseUnix,
   {$ENDIF}
+  {$IFDEF WINDOWS}
+  Windows,
+  {$ENDIF}
   Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config,
   IRCLogBot.Database
   { you can add units after this };

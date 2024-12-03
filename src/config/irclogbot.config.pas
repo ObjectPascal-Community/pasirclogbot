@@ -16,12 +16,15 @@ type
   private
     FINIFile: String;
     FINI: TIniFile;
-    FHost: String;
-    FPort: Word;
-    FNickName: String;
-    FUserName: String;
-    FRealName: String;
-    FChannel: String;
+
+    FIRCHost: String;
+    FIRCPort: Word;
+    FIRCNickName: String;
+    FIRCUserName: String;
+    FIRCRealName: String;
+    FIRCChannel: String;
+
+    FDBFile: String;
   protected
   public
     constructor Create(AConfigFile: String);
@@ -30,23 +33,27 @@ type
     procedure LoadValues;
 
     property Host: String
-      read FHost
-      write FHost;
+      read FIRCHost
+      write FIRCHost;
     property Port: Word
-      read FPort
-      write FPort;
+      read FIRCPort
+      write FIRCPort;
     property NickName: String
-      read FNickName
-      write FNickName;
+      read FIRCNickName
+      write FIRCNickName;
     property UserName: String
-      read FUserName
-      write FUserName;
+      read FIRCUserName
+      write FIRCUserName;
     property RealName: String
-      read FRealName
-      write FRealName;
+      read FIRCRealName
+      write FIRCRealName;
     property Channel: String
-      read FChannel
-      write FChannel;
+      read FIRCChannel
+      write FIRCChannel;
+
+    property Database: String
+      read FDBFile
+      write FDBFile;
   published
   end;
 
@@ -57,12 +64,12 @@ implementation
 constructor TBotConfig.Create(AConfigFile: String);
 begin
   FINIFile:= AConfigFile;
-  FHost:= 'localhost';
-  FPort:= 6667;
-  FNickName:= '';
-  FUserName:= '';
-  FRealName:= '';
-  FChannel:= '';
+  FIRCHost:= 'localhost';
+  FIRCPort:= 6667;
+  FIRCNickName:= '';
+  FIRCUserName:= '';
+  FIRCRealName:= '';
+  FIRCChannel:= '';
 end;
 
 destructor TBotConfig.Destroy;
@@ -75,12 +82,19 @@ begin
   if FileExists(FINIFile) then
   begin
     FINI:= TIniFile.Create(FINIFile);
-    FHost:= FINI.ReadString('IRC', 'Host', 'localhost');
-    FPort:= FINI.ReadInteger('IRC', 'Port', 6667);
-    FNickName:= FINI.ReadString('IRC', 'NickName', '');
-    FUserName:= FINI.ReadString('IRC', 'UserName', '');
-    FRealName:= FINI.ReadString('IRC', 'RealName', '');
-    FChannel:= FINI.ReadString('IRC', 'Channel', '');
+    try
+      FIRCHost:= FINI.ReadString('IRC', 'Host', 'localhost');
+      FIRCPort:= FINI.ReadInteger('IRC', 'Port', 6667);
+      FIRCNickName:= FINI.ReadString('IRC', 'NickName', '');
+      FIRCUserName:= FINI.ReadString('IRC', 'UserName', '');
+      FIRCRealName:= FINI.ReadString('IRC', 'RealName', '');
+      FIRCChannel:= FINI.ReadString('IRC', 'Channel', '');
+
+      FDBFile:= FINI.ReadString('DB', 'File', 'paslogbot.db');
+
+    finally
+      FINI.Free;
+    end;
   end
   else
   begin

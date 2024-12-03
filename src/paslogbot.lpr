@@ -7,7 +7,8 @@ uses
   cThreads,
   BaseUnix,
   {$ENDIF}
-  Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config
+  Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config,
+  IRCLogBot.Database
   { you can add units after this };
 
 type
@@ -17,7 +18,6 @@ type
   private
     FIRCLogBot: TIRCLogBot;
     FConfigFile: String;
-    FBotConfig: TBotConfig;
   protected
     procedure DoRun; override;
   public
@@ -36,7 +36,7 @@ begin
   case signal of
     SIGTERM, SIGINT:
       begin
-        WriteLn;
+        if signal = SIGINT then WriteLn;
         debug('Received termination signal');
         if Assigned(Application) then
           Application.Terminate;
@@ -90,6 +90,7 @@ end;
 
 procedure TPasLogBot.DoRun;
 var
+  config: TBotConfig;
   ErrorMsg: String;
 begin
   // Signal Handling
@@ -98,7 +99,7 @@ begin
   ErrorMsg:= CheckOptions('hc:d', ['help', 'config:', 'debug']);
   if ErrorMsg<>'' then
   begin
-    //ShowException(Exception.Create(ErrorMsg));
+    WriteLn('Error: ', ErrorMsg);
     Terminate;
     exit;
   end;
@@ -126,14 +127,13 @@ begin
 
   debug(Format('Attempting to read config from: "%s"...', [FConfigFile]));
 
-  { #todo 100 -ogcarreno : Parse param c/config }
-  FBotConfig:= TBotConfig.Create(FConfigFile);
+  config:= TBotConfig.Create(FConfigFile);
   try
-    FBotConfig.LoadValues;
+    config.LoadValues;
   except
     on e:Exception do
     begin
-      debug(Format('Error: %s', [e.Message]));
+      WriteLn(Format('Error: %s', [e.Message]));
       Terminate;
       exit;
     end;
@@ -141,14 +141,7 @@ begin
 
   { #todo 100 -ogcarreno : Use data from config }
   debug('Creating IRC client...');
-  FIRCLogBot:= TIRCLogBot.Create(
-    FBotConfig.Host,
-    FBotConfig.Port,
-    FBotConfig.NickName,
-    FBotConfig.UserName,
-    FBotConfig.Realname,
-    FBotConfig.Channel
-  );
+  FIRCLogBot:= TIRCLogBot.Create(config);
   debug('Successfully created IRC client.');
   debug('Starting...');
   { #todo 100 -ogcarreno : Read Config }
@@ -159,6 +152,7 @@ begin
   end;
   FIRCLogBot.Shutdown;
   FIRCLogBot.Free;
+  config.Free;
   debug('Exiting.');
   // stop program loop
   //Terminate;
@@ -194,7 +188,7 @@ end;
 
 begin
   Application:= TPasLogBot.Create(nil);
-  Application.Title:= 'Pascal Log Bot';
+  Application.Title:= 'Pascal IRC Log Bot';
   Application.Run;
   Application.Free;
 end.

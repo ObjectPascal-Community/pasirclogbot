@@ -1,4 +1,11 @@
 # Pascal IRC Log Bot
+[![Build Status](https://github.com/ObjectPascal-Community/pasirclogbot/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/ObjectPascal-Community/pasirclogbot/actions)
+[![Supports Windows](https://img.shields.io/badge/support-Windows-blue?logo=Windows)](https://github.com/ObjectPascal-Community/pasirclogbot/releases/latest)
+[![Supports Linux](https://img.shields.io/badge/support-Linux-yellow?logo=Linux)](https://github.com/ObjectPascal-Community/pasirclogbot/releases/latest)
+[![Supports macOS](https://img.shields.io/badge/support-macOS-black?logo=macOS)](https://github.com/ObjectPascal-Community/pasirclogbot/releases/latest)
+[![License](https://img.shields.io/github/license/ObjectPascal-Community/pasirclogbot)](https://github.com/ObjectPascal-Community/pasirclogbot/blob/main/LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/ObjectPascal-Community/pasirclogbot?label=latest%20release)](https://github.com/ObjectPascal-Community/pasirclogbot/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/ObjectPascal-Community/pasirclogbot/total)](https://github.com/ObjectPascal-Community/pasirclogbot/releases)
 
 > [!Important]
 > Since I was lazy enough to not bother with the boilerplate, I asked some `AI` bots to help me.\

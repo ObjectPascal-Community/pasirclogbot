@@ -75,7 +75,7 @@ var
   line: String;
   index: Integer = 0;
 begin
-  if not FIRC.Connected then;
+  if not FIRC.Connected then
   begin
     debug('Exiting replay thread due not being connected.');
     exit;

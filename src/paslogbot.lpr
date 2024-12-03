@@ -5,14 +5,14 @@ program paslogbot;
 uses
   {$IFDEF UNIX}
   cthreads,
+  BaseUnix,
   {$ENDIF}
   Classes, SysUtils, CustApp
   { you can add units after this };
 
 type
 
-  { TPasLogBot }
-
+{ TPasLogBot }
   TPasLogBot = class(TCustomApplication)
   protected
     procedure DoRun; override;
@@ -21,6 +21,65 @@ type
     destructor Destroy; override;
     procedure WriteHelp; virtual;
   end;
+
+var
+  Application: TPasLogBot;
+
+{ Signal Handling }
+{$IFDEF UNIX}
+procedure SignalHandler(signal: longint; info: psiginfo; context: psigcontext); cdecl;
+begin
+  case signal of
+    SIGTERM, SIGINT:
+      begin
+        WriteLn('Received termination signal');
+        if Assigned(Application) then
+          Application.Terminate;
+      end;
+    SIGHUP:
+      begin
+        WriteLn('Received SIGHUP - could implement config reload here');
+        // Could implement configuration reload here
+      end;
+  end;
+end;
+
+procedure SetupSignalHandlers;
+var
+  act: SigActionRec;
+begin
+  FillChar(act, SizeOf(act), 0);
+  act.sa_handler := @SignalHandler;
+  act.sa_flags := 0;
+
+  // Set up signal handlers
+  fpSigAction(SIGTERM, @act, nil);
+  fpSigAction(SIGINT, @act, nil);
+  fpSigAction(SIGHUP, @act, nil);
+end;
+{$ENDIF}
+
+{$IFDEF WINDOWS}
+function ConsoleCtrlHandler(CtrlType: DWORD): BOOL; stdcall;
+begin
+  case CtrlType of
+    CTRL_C_EVENT, CTRL_BREAK_EVENT, CTRL_CLOSE_EVENT:
+      begin
+        WriteLn('Received termination signal');
+        if Assigned(Application) then
+          Application.Terminate;
+        Result := True;
+        Exit;
+      end;
+  end;
+  Result := False;
+end;
+
+procedure SetupSignalHandlers;
+begin
+  SetConsoleCtrlHandler(@ConsoleCtrlHandler, True);
+end;
+{$ENDIF}
 
 { TPasLogBot }
 
@@ -43,10 +102,12 @@ begin
     Exit;
   end;
 
-
-
+  while not Terminated do
+  begin
+    Sleep(50);
+  end;
   // stop program loop
-  Terminate;
+  //Terminate;
 end;
 
 constructor TPasLogBot.Create(TheOwner: TComponent);
@@ -66,8 +127,6 @@ begin
   writeln('Usage: ', ExeName, ' -h');
 end;
 
-var
-  Application: TPasLogBot;
 begin
   Application:=TPasLogBot.Create(nil);
   Application.Title:='Pascal Log Bot';

@@ -4,10 +4,10 @@ program paslogbot;
 
 uses
   {$IFDEF UNIX}
-  cthreads,
+  cThreads,
   BaseUnix,
   {$ENDIF}
-  Classes, SysUtils, CustApp, Bot
+  Classes, SysUtils, CustApp, IRCLogBot.Bot, IRCLogBot.Config
   { you can add units after this };
 
 type
@@ -16,6 +16,8 @@ type
   TPasLogBot = class(TCustomApplication)
   private
     FIRCLogBot: TIRCLogBot;
+    FConfigFile: String;
+    FBotConfig: TBotConfig;
   protected
     procedure DoRun; override;
   public
@@ -93,7 +95,7 @@ begin
   // Signal Handling
   SetupSignalHandlers;
   // quick check parameters
-  ErrorMsg:= CheckOptions('h', 'help');
+  ErrorMsg:= CheckOptions('hc:', ['help', 'config:']);
   if ErrorMsg<>'' then
   begin
     //ShowException(Exception.Create(ErrorMsg));
@@ -109,13 +111,50 @@ begin
     exit;
   end;
 
+  if HasOption('c', 'config') then
+  begin
+    FConfigFile:= GetOptionValue('c', 'config');
+  end
+  else
+  begin
+    FConfigFile:= ConcatPaths([GetUserDir, '.pasirclogbot']);
+  end;
+
+  WriteLn(Format('Attempting to read config from: "%s"...', [FConfigFile]));
+
+  { #todo 100 -ogcarreno : Parse param c/config }
+  FBotConfig:= TBotConfig.Create(FConfigFile);
+  try
+    FBotConfig.LoadValues;
+  except
+    on e:Exception do
+    begin
+      WriteLn(Format('Error: %s', [e.Message]));
+      Terminate;
+      exit;
+    end;
+  end;
+
+  { #todo 100 -ogcarreno : Use data from config }
+  WriteLn('Creating IRC client...');
+  FIRCLogBot:= TIRCLogBot.Create(
+    FBotConfig.Host,
+    FBotConfig.Port,
+    FBotConfig.NickName,
+    FBotConfig.UserName,
+    FBotConfig.Realname,
+    FBotConfig.Channel
+  );
+  WriteLn('Successfully created IRC client.');
   WriteLn('Starting...');
+  { #todo 100 -ogcarreno : Read Config }
   FIRCLogBot.Run;
   while not Terminated do
   begin
     Sleep(50);
   end;
   FIRCLogBot.Shutdown;
+  FIRCLogBot.Free;
   WriteLn('Exiting.');
   // stop program loop
   //Terminate;
@@ -125,26 +164,22 @@ constructor TPasLogBot.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   StopOnException:= True;
-  FIRCLogBot:= TIRCLogBot.Create(
-    '[PasLogBot]',
-    'paslogbot',
-    'Pascal channel IRC log bot',
-    'localhost',
-    6667,
-    '#test'
-  );
 end;
 
 destructor TPasLogBot.Destroy;
 begin
-  FIRCLogBot.Free;
   inherited Destroy;
 end;
 
 procedure TPasLogBot.WriteHelp;
 begin
   { add your help code here }
-  WriteLn('Usage: ', ExtractFileName(ExeName), ' -h');
+  WriteLn('Usage:');
+  WriteLn('  ', ExtractFileName(ExeName), ' [PARAMS]');
+  WriteLn;
+  WriteLn('PARAMS:');
+  WriteLn('    -h/--help         This help message.');
+  WriteLn('    -c/--config=FILE  Use provided FILE as config. ( default: ~/.pasirclogbot )');
 end;
 
 begin

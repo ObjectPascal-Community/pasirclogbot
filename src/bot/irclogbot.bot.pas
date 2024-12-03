@@ -1,4 +1,4 @@
-unit Bot;
+unit IRCLogBot.Bot;
 
 {$mode ObjFPC}{$H+}
 
@@ -35,8 +35,8 @@ type
       ATarget, AMessage: String);
   protected
   public
-    constructor Create(ANickName, AUserName, ARealName, AHost: String;
-      APort: Word; AChannel: String);
+    constructor Create(AHost: String; APort: Word;
+      ANickName, AUserName, ARealName, AChannel: String);
     destructor Destroy; override;
 
     procedure Run;
@@ -124,12 +124,12 @@ begin
   if FIRC.Connected then
   begin
     WriteLn('Disconnecting...');
-    FIRC.Disconnect('Quitting.');
+    FIRC.Disconnect('Need to go and have a wee nap.');
   end;
 end;
 
-constructor TIRCLogBot.Create(ANickName, AUserName, ARealName, AHost: String;
-  APort: Word; AChannel: String);
+constructor TIRCLogBot.Create(AHost: String; APort: Word; ANickName, AUserName,
+  ARealName, AChannel: String);
 begin
   FNickname:= ANickname;
   FUsername:= AUserName;

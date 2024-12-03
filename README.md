@@ -29,4 +29,5 @@ Usage:
 PARAMS:
     -h/--help         This help message.
     -c/--config=FILE  Use provided FILE as config. ( default: ~/.pasirclogbot )
+    -d/--debug        Turn debug On. (default: Off)
 ```

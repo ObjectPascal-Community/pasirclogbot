@@ -40,7 +40,7 @@ begin
     SIGTERM, SIGINT:
       begin
         if signal = SIGINT then WriteLn;
-        debug('Received termination signal');
+        debug('Received termination signal.');
         if Assigned(Application) then
           Application.Terminate;
       end;
@@ -73,7 +73,7 @@ begin
   case CtrlType of
     CTRL_C_EVENT, CTRL_BREAK_EVENT, CTRL_CLOSE_EVENT:
       begin
-        WriteLn('Received termination signal');
+        debug('Received termination signal.');
         if Assigned(Application) then
           Application.Terminate;
         Result := True;

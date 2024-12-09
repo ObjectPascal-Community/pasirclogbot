@@ -89,6 +89,9 @@ begin
 end;
 
 function TDatabase.Get(ACount: Integer): TStringList;
+var
+  timestamp: TDateTime;
+  date, channel, nick, message: String;
 begin
   Result:= TStringList.Create;
   FCriticalSection.Acquire;
@@ -106,17 +109,25 @@ begin
         begin
           FQuery.First;
           repeat
+            timestamp:= FQuery.FieldByName('timestamp').AsDateTime;
+            date:= FormatDateTime(
+              DefaultFormatSettings.ShortDateFormat + ' ' + DefaultFormatSettings.LongTimeFormat,
+              timestamp
+            );
+            channel:= FQuery.FieldByName('channel').AsString;
+            nick:= FQuery.FieldByName('nick').AsString;
+            message:= FQuery.FieldByName('message').AsString;
             debug('Retrieving: %s [%s] %s: %s', [
-              FQuery.FieldByName('timestamp').AsString,
-              FQuery.FieldByName('channel').AsString,
-              FQuery.FieldByName('nick').AsString,
-              FQuery.FieldByName('message').AsString
+              date,
+              channel,
+              nick,
+              message
             ]);
             Result.Insert(0, Format('%s [%s] %s: %s',[
-              FQuery.FieldByName('timestamp').AsString,
-              FQuery.FieldByName('channel').AsString,
-              FQuery.FieldByName('nick').AsString,
-              FQuery.FieldByName('message').AsString
+              date,
+              channel,
+              nick,
+              message
             ]));
             FQuery.Next;
           until FQuery.EOF;

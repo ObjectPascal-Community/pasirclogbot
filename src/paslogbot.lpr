@@ -10,8 +10,7 @@ uses
   {$IFDEF WINDOWS}
   Windows,
   {$ENDIF}
-  Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config,
-  IRCLogBot.Database
+  Classes, SysUtils, CustApp, IRCLogBot.Common, IRCLogBot.Bot, IRCLogBot.Config
   { you can add units after this };
 
 type
@@ -128,6 +127,13 @@ begin
   // Debug
   DebugOn:= HasOption('d', 'debug');
 
+  //debug('Long Date: ' + DefaultFormatSettings.LongDateFormat);
+  //debug('Long Time: ' + DefaultFormatSettings.LongTimeFormat);
+  //debug('Short Date: ' + DefaultFormatSettings.ShortDateFormat);
+  //debug('Short Time: ' + DefaultFormatSettings.ShortTimeFormat);
+  //debug('Date Sep: ' + DefaultFormatSettings.DateSeparator);
+  DefaultFormatSettings.ShortDateFormat:= 'yyyy/mm/dd';
+  DefaultFormatSettings.DateSeparator:= '/';
   debug(Format('Attempting to read config from: "%s"...', [FConfigFile]));
 
   config:= TBotConfig.Create(FConfigFile);
@@ -142,12 +148,10 @@ begin
     end;
   end;
 
-  { #todo 100 -ogcarreno : Use data from config }
   debug('Creating IRC client...');
   FIRCLogBot:= TIRCLogBot.Create(config);
   debug('Successfully created IRC client.');
   debug('Starting...');
-  { #todo 100 -ogcarreno : Read Config }
   FIRCLogBot.Run;
   while not Terminated do
   begin

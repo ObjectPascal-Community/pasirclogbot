@@ -23,7 +23,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="bot;config;common;database"/>
+            <OtherUnitFiles Value="bot;config;common;database;threads"/>
             <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -57,7 +57,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="bot;config;common;database"/>
+            <OtherUnitFiles Value="bot;config;common;database;threads"/>
             <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -114,6 +114,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCLogBot.Database"/>
       </Unit>
+      <Unit>
+        <Filename Value="threads/irclogbot.replay.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IRCLogBot.Replay"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -123,7 +128,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="bot;config;common;database"/>
+      <OtherUnitFiles Value="bot;config;common;database;threads"/>
       <UnitOutputDirectory Value="../bin/lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
   </CompilerOptions>

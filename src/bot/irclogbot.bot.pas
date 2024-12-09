@@ -51,71 +51,9 @@ implementation
 
 uses
   IRCLogBot.Common
+, IRCLogBot.Replay
 ;
 
-type
-{ TReplayThread }
-  TReplayThread = class(TTHread)
-  private
-    FIRC: TIdIRC;
-    FTarget: String;
-    FLines: TStringList;
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(AIRC: TIdIRC; const ATarget: String;
-      const ALines: TStringList);
-  published
-  end;
-
-{ TReplayThread }
-
-procedure TReplayThread.Execute;
-var
-  line: String;
-  index: Integer = 0;
-begin
-  if not FIRC.Connected then
-  begin
-    debug('Exiting replay thread due not being connected.');
-    exit;
-  end;
-  try
-    FIRC.Say(FTarget, '!! --> To avoid triggering flooding, for each 5 lines, I will pause for 5 seconds <-- !!');
-    FIRC.Say(FTarget, Format('*** Here are the last %d lines ***', [FLines.Count]));
-    for line in FLines do
-    begin
-      if (Terminated) or (not FIRC.Connected) then
-      begin
-        debug('Exiting replay thread due to termination or not being connected.');
-        exit;
-      end;
-      debug('Sending #%d: "%s"', [index, line]);
-      Inc(index);
-      FIRC.Say(FTarget, line);
-      if (index mod 5) = 0 then
-      begin
-        debug('Pausing');
-        Sleep(5000);
-      end;
-    end;
-    FIRC.Say(FTarget, Format('*** End of the last %d lines ***', [FLines.Count]));
-  finally
-    FLines.Free;
-  end;
-end;
-
-constructor TReplayThread.Create(AIRC: TIdIRC; const ATarget: String;
-      const ALines: TStringList);
-begin
-  inherited Create(True);
-  FIRC:= AIRC;
-  FTarget:= ATarget;
-  FLines:= TStringList.Create;
-  FLines.Text := ALines.Text;
-  FreeOnTerminate:= True;
-  Start;
-end;
 
 { TIRCLogBot }
 

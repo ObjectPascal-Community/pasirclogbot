@@ -39,6 +39,7 @@ type
       ATarget, AMessage: String);
 
     procedure Help(const ATarget: String);
+    procedure Version(const ATarget: String);
     procedure Replay(const ATarget: String; ACount: Integer);
   protected
   public
@@ -140,6 +141,11 @@ begin
         Help(ANickname);
         exit;
       end;
+      if Pos('.version', Trim(AMessage)) = 1 then
+      begin
+        Version(ANickname);
+        exit;
+      end;
       if Pos('.replay', Trim(AMessage)) = 1 then
       begin
         strings:= AMessage.Split([' ']);
@@ -178,7 +184,17 @@ begin
   debug('Help command.');
   FIRC.Say(ATarget, 'Commands:');
   FIRC.Say(ATarget, '.help           - This help information.');
+  FIRC.Say(ATarget, '.version        - Version and info about the bot.');
   FIRC.Say(ATarget, '.replay [count] - Raplays last <count> lines. Default is last 10 lines.');
+end;
+
+procedure TIRCLogBot.Version(const ATarget: String);
+begin
+  debug('Version command.');
+  FIRC.Say(ATarget, Format('Version: %s, %s',[
+    cVersion,
+    cRepoURL
+  ]));
 end;
 
 procedure TIRCLogBot.Replay(const ATarget: String; ACount: Integer);

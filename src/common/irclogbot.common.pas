@@ -8,6 +8,10 @@ uses
   SysUtils
 ;
 
+const
+  cVersion = 'v0.0.3';
+  cRepoURL = 'https://github.com/ObjectPascal-Community/pasirclogbot';
+
 var
   DebugOn: Boolean;
 

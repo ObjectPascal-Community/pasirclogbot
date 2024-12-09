@@ -26,7 +26,7 @@ The initial idea is to have all the logging of the `IRC` channel dumped into a `
 
 Not sure if it's worth having the bot itself serve the website, but due to the fact that `SQLite` will be locked during the bot's operation, then this will have to be the path, for the time being.
 
-# Usage
+## Usage
 
 ```console
 $ paslogbot -h
@@ -38,3 +38,7 @@ PARAMS:
     -c/--config=FILE  Use provided FILE as config. ( default: ~/.pasirclogbot )
     -d/--debug        Turn debug On. (default: Off)
 ```
+
+## About the author
+
+I'm usually on `irc.libera.chat` on the `#objectpascal`, `#lazarus` and `#pascal` channels. On `IRC` I use the nick name `[Batch]`.

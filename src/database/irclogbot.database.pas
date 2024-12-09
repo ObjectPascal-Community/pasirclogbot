@@ -7,6 +7,7 @@ interface
 uses
   Classes
 , SysUtils
+, SyncObjs
 , SQLite3Conn
 , SQLDB
 , IRCLogBot.Common
@@ -16,6 +17,7 @@ type
 { TDatabase }
   TDatabase = class(TObject)
   private
+    FCriticalSection: TCriticalSection;
     FConnection: TSQLite3Connection;
     FTransaction: TSQLTransaction;
     FQuery: TSQLQuery;
@@ -60,67 +62,85 @@ end;
 
 procedure TDatabase.Insert(ANickName, AChannel, AMessage: String);
 begin
+  FCriticalSection.Acquire;
   try
-    debug('Starting Transaction...');
-    FTransaction.StartTransaction;
-    debug('Inserting: <%s> [%s] "%s"', [ANickName, AChannel, AMessage]);
-    FConnection.ExecuteDirect(Format(
-      'INSERT INTO logs (nick, channel, message) VALUES (%s, %s, %s)',
-      [QuotedStr(ANickName), QuotedStr(AChannel), QuotedStr(AMessage)]));
-    FTransaction.Commit;
-    debug('Transaction committed.');
-  except
-    on e:Exception do
-    begin
-      FTransaction.Rollback;
-      debug('Error inserting message: %s', [e.Message]);
+    try
+      debug('Starting Transaction...');
+      FTransaction.StartTransaction;
+      try
+        debug('Inserting: <%s> [%s] "%s"', [ANickName, AChannel, AMessage]);
+        FConnection.ExecuteDirect(Format(
+          'INSERT INTO logs (nick, channel, message) VALUES (%s, %s, %s)',
+          [QuotedStr(ANickName), QuotedStr(AChannel), QuotedStr(AMessage)]));
+      finally
+        FTransaction.Commit;
+        debug('Transaction committed.');
+      end;
+    except
+      on e:Exception do
+      begin
+        FTransaction.Rollback;
+        debug('Error inserting message: %s', [e.Message]);
+      end;
     end;
+  finally
+    FCriticalSection.Release;
   end;
 end;
 
 function TDatabase.Get(ACount: Integer): TStringList;
 begin
   Result:= TStringList.Create;
+  FCriticalSection.Acquire;
   try
     debug('Starting transaction.');
     FTransaction.StartTransaction;
-    FQuery.SQL.Text:= Format(
-      'SELECT timestamp, nick, channel, message FROM logs ORDER BY id DESC LIMIT %d',
-      [ACount]
-    );
-    FQuery.Open;
-    if FQuery.RecordCount > 0 then
-    begin
-      FQuery.First;
-      repeat
-        debug('Retrieving: %s [%s] %s: %s', [
-          FQuery.FieldByName('timestamp').AsString,
-          FQuery.FieldByName('channel').AsString,
-          FQuery.FieldByName('nick').AsString,
-          FQuery.FieldByName('message').AsString
-        ]);
-        Result.Insert(0, Format('%s [%s] %s: %s',[
-          FQuery.FieldByName('timestamp').AsString,
-          FQuery.FieldByName('channel').AsString,
-          FQuery.FieldByName('nick').AsString,
-          FQuery.FieldByName('message').AsString
-        ]));
-        FQuery.Next;
-      until FQuery.EOF;
-      FQuery.Close;
-      FTransaction.EndTransaction;
-      debug('Transaction ended.');
+    try
+      try
+        FQuery.SQL.Text:= Format(
+          'SELECT timestamp, nick, channel, message FROM logs ORDER BY id DESC LIMIT %d',
+          [ACount]
+        );
+        FQuery.Open;
+        if FQuery.RecordCount > 0 then
+        begin
+          FQuery.First;
+          repeat
+            debug('Retrieving: %s [%s] %s: %s', [
+              FQuery.FieldByName('timestamp').AsString,
+              FQuery.FieldByName('channel').AsString,
+              FQuery.FieldByName('nick').AsString,
+              FQuery.FieldByName('message').AsString
+            ]);
+            Result.Insert(0, Format('%s [%s] %s: %s',[
+              FQuery.FieldByName('timestamp').AsString,
+              FQuery.FieldByName('channel').AsString,
+              FQuery.FieldByName('nick').AsString,
+              FQuery.FieldByName('message').AsString
+            ]));
+            FQuery.Next;
+          until FQuery.EOF;
+          FQuery.Close;
+        end;
+      finally
+        FTransaction.EndTransaction;
+        debug('Transaction ended.');
+      end;
+    except
+      on e:Exception do
+      begin
+        FTransaction.Rollback;
+        debug('Error retrieving lines: %s', [e.Message]);
+      end;
     end;
-  except
-    on e:Exception do
-    begin
-      debug('Error retrieving lines: %s', [e.Message]);
-    end;
+  finally
+    FCriticalSection.Release;
   end;
 end;
 
 constructor TDatabase.Create(ADatabaseFile: String);
 begin
+  FCriticalSection:= TCriticalSection.Create;
   FConnection:= TSQLite3Connection.Create(nil);
   FTransaction:= TSQLTransaction.Create(FConnection);
   FConnection.Transaction:= FTransaction;
@@ -133,6 +153,7 @@ end;
 
 destructor TDatabase.Destroy;
 begin
+  FCriticalSection.Free;
   FQuery.Free;
   FTransaction.Free;
   FConnection.Free;

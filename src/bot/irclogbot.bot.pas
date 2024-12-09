@@ -63,7 +63,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(const AIRC: TIdIRC; const ATarget: String;
+    constructor Create(AIRC: TIdIRC; const ATarget: String;
       const ALines: TStringList);
   published
   end;
@@ -105,7 +105,7 @@ begin
   end;
 end;
 
-constructor TReplayThread.Create(const AIRC: TIdIRC; const ATarget: String;
+constructor TReplayThread.Create(AIRC: TIdIRC; const ATarget: String;
       const ALines: TStringList);
 begin
   inherited Create(True);

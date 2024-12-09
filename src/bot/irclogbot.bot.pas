@@ -165,6 +165,7 @@ begin
         except
           on e:Exception do
           begin
+            error('Replay error: %s', [e.Message]);
             FIRC.Say(ANickname, 'Something went wrong: "' + e.Message + '". It''s been logged. Please contact the admin if I stop working.');
           end;
         end;
@@ -252,7 +253,7 @@ begin
   except
     on e:Exception do
     begin
-      debug('Error connecting: "%s".', [e.Message]);
+      error('Error connecting: "%s".', [e.Message]);
     end;
   end;
   try
@@ -261,7 +262,7 @@ begin
   except
     on e:Exception do
     begin
-      debug('Error joining: "%s".', [e.Message]);
+      error('Error joining: "%s".', [e.Message]);
     end;
   end;
   debug('Starting Replay Thread.');
@@ -283,7 +284,7 @@ begin
     except
       on e:Exception do
       begin
-        debug('Error disconnecting: "%s".', [e.Message]);
+        error('Error disconnecting: "%s".', [e.Message]);
       end;
     end;
   end;
@@ -316,7 +317,7 @@ begin
   except
     on e:Exception do
     begin
-      debug('Error creating db: "%s".', [e.Message]);
+      error('Error creating db: "%s".', [e.Message]);
     end;
   end;
 end;

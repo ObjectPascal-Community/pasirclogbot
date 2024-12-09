@@ -56,7 +56,7 @@ begin
     on e:Exception do
     begin
       FTransaction.Rollback;
-      debug('Error setting tables: "%s".', [e.Message]);
+      error('Error setting tables: "%s".', [e.Message]);
     end;
   end;
 end;
@@ -81,7 +81,7 @@ begin
       on e:Exception do
       begin
         FTransaction.Rollback;
-        debug('Error inserting message: "%s".', [e.Message]);
+        error('Error inserting message: "%s".', [e.Message]);
       end;
     end;
   finally
@@ -137,7 +137,7 @@ begin
       on e:Exception do
       begin
         FTransaction.Rollback;
-        debug('Error retrieving lines: "%s".', [e.Message]);
+        error('Error retrieving lines: "%s".', [e.Message]);
       end;
     end;
   finally
@@ -197,7 +197,7 @@ begin
       on e:Exception do
       begin
         FTransaction.Rollback;
-        debug('Error retrieving lines: "%s".', [e.Message]);
+        error('Error retrieving lines: "%s".', [e.Message]);
       end;
     end;
   finally

@@ -17,13 +17,15 @@ var
 
 procedure info(const AMessage: String); overload;
 procedure info(const AFormat: String; AValues: array of const);overload;
+procedure error(const AMessage: String); overload;
+procedure error(const AFormat: String; AValues: array of const);overload;
 procedure debug(const AMessage: String); overload;
 procedure debug(const AFormat: String; AValues: array of const);overload;
 
 implementation
 
 type
-  TLogLevel = (llInfo, llDebug);
+  TLogLevel = (llInfo, llError, llDebug);
 
 var
   dateTimeStr: String;
@@ -34,6 +36,9 @@ begin
   case ALevel of
     llInfo:begin
       WriteLn(dateTimeStr, '[INF]: ', AMessage);
+    end;
+    llError:begin
+      WriteLn(dateTimeStr, '[ERR]: ', AMessage);
     end;
     llDebug:begin
       WriteLn(dateTimeStr, '[DBG]: ', AMessage);
@@ -50,6 +55,16 @@ end;
 procedure info(const AFormat: String; AValues: array of const);
 begin
   Log(llInfo, Format(AFormat, AValues));
+end;
+
+procedure error(const AMessage: String);
+begin
+  Log(llError, AMessage);
+end;
+
+procedure error(const AFormat: String; AValues: array of const);
+begin
+  Log(llError, Format(AFormat, AValues));
 end;
 
 procedure debug(const AMessage: String);

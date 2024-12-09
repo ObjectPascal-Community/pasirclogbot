@@ -101,7 +101,7 @@ begin
   ErrorMsg:= CheckOptions('hc:d', ['help', 'config:', 'debug']);
   if ErrorMsg<>'' then
   begin
-    WriteLn('Error: ', ErrorMsg);
+    error('Error: "%s"', [ErrorMsg]);
     Terminate;
     exit;
   end;
@@ -143,20 +143,29 @@ begin
   except
     on e:Exception do
     begin
-      WriteLn(Format('Error: %s', [e.Message]));
+      error('Error: %s', [e.Message]);
       Terminate;
       exit;
     end;
   end;
 
   debug('Creating IRC client...');
-  FIRCLogBot:= TIRCLogBot.Create(config);
+  try
+    FIRCLogBot:= TIRCLogBot.Create(config);
+  except
+    on e:Exception do
+    begin
+      error('Error: "%s".', [e.Message]);
+      Terminate;
+      exit;
+    end;
+  end;
   debug('Successfully created IRC client.');
   info('Starting...');
   FIRCLogBot.Run;
   while not Terminated do
   begin
-    Sleep(50);
+    Sleep(1);
   end;
   FIRCLogBot.Shutdown;
   FIRCLogBot.Free;

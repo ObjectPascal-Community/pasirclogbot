@@ -220,10 +220,10 @@ end;
 
 destructor TDatabase.Destroy;
 begin
-  FCriticalSection.Free;
   FQuery.Free;
   FTransaction.Free;
   FConnection.Free;
+  FCriticalSection.Free;
   inherited Destroy;
 end;
 

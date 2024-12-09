@@ -224,7 +224,7 @@ begin
   debug('Replay command(%d).', [ACount]);
   lines:= FDB.Get(ACount);
   debug('Lines: %d.', [lines.Count]);
-  FReplay.Add(ATarget, lines);
+  FReplay.Add(btReplay, ATarget, lines);
   lines.Free;
 end;
 
@@ -236,7 +236,7 @@ begin
   lines:= FDB.Search(AQuery);
   if lines.Count > 0 then
   begin
-    FReplay.Add(ATarget, lines);
+    FReplay.Add(btSearch, ATarget, lines);
   end
   else
   begin
@@ -312,14 +312,7 @@ begin
   FIRC.OnPrivateMessage:= @OnPrivateMessage;
 
   // Setup Database
-  try
-    FDB:= TDatabase.Create(FConfig.Database);
-  except
-    on e:Exception do
-    begin
-      error('Error creating db: "%s".', [e.Message]);
-    end;
-  end;
+  FDB:= TDatabase.Create(FConfig.Database);
 end;
 
 destructor TIRCLogBot.Destroy;

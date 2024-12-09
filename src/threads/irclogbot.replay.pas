@@ -14,6 +14,9 @@ uses
 ;
 
 type
+{ TBundleType }
+  TBundleType = (btReplay, btSearch);
+
 { TReplayThread }
   TReplayThread = class(TThread)
   private
@@ -26,7 +29,7 @@ type
     constructor Create(AIRC: TIdIRC);
     destructor Destroy; override;
 
-    procedure Add(const ANick: String; const AList: TStringList);
+    procedure Add(const AType: TBundleType; const ANick: String; const AList: TStringList);
   published
   end;
 
@@ -39,13 +42,16 @@ type
 { TReplayBundle }
   TReplayBundle = class(TObject)
   private
+    FBundleType: TBundleType;
     FNick: String;
     FLines: TStringList;
   protected
   public
-    constructor Create(const ANick: String; const ALines: TStringList);
+    constructor Create(const AType: TBundleType; const ANick: String; const ALines: TStringList);
     destructor Destroy; override;
 
+    property BundleType: TBundleType
+      read FBundleType;
     property Nick: String
       read FNick;
     property Lines: TStringList
@@ -55,9 +61,10 @@ type
 
 { TReplayBundle }
 
-constructor TReplayBundle.Create(const ANick: String;
+constructor TReplayBundle.Create(const AType: TBundleType; const ANick: String;
   const ALines: TStringList);
 begin
+  FBundleType:= AType;
   FNick:= ANick;
   FLines:= TStringList.Create;
   FLines.Text:= ALines.Text;
@@ -85,6 +92,7 @@ begin
       if FQueue.Count > 0 then
       begin
         bundle:= TReplayBundle.Create(
+          (FQueue[0] as TReplayBundle).BundleType,
           (FQueue[0] as TReplayBundle).Nick,
           (FQueue[0] as TReplayBundle).Lines
         );
@@ -96,10 +104,18 @@ begin
     if Assigned(bundle) then
     begin
       FIRC.Say(bundle.Nick, '!! --> To avoid triggering flooding, for each 5 lines, I will pause for 5 seconds <-- !!');
-      FIRC.Say(bundle.Nick, Format('*** Here are the last %d lines ***', [bundle.Lines.Count]));
+      case bundle.BundleType of
+        btReplay:begin
+          FIRC.Say(bundle.Nick, Format('*** Here are the last %d lines ***', [bundle.Lines.Count]));
+        end;
+        btSearch:begin
+          FIRC.Say(bundle.Nick, Format('*** Here are the last %d lines of your search ***', [bundle.Lines.Count]));
+        end;
+      end;
       index:= 1;
       for line in bundle.Lines do
       begin
+        If Terminated then exit;
         debug('Sending #%d: "%s".', [index, line]);
         Inc(index);
         FIRC.Say(bundle.Nick, line);
@@ -109,7 +125,14 @@ begin
           Sleep(5000);
         end;
       end;
-      FIRC.Say(bundle.Nick, Format('*** End of the last %d lines ***', [bundle.Lines.Count]));
+      case bundle.BundleType of
+        btReplay:begin
+          FIRC.Say(bundle.Nick, Format('*** End of the last %d lines ***', [bundle.Lines.Count]));
+        end;
+        btSearch:begin
+          FIRC.Say(bundle.Nick, Format('*** End of the last %d lines of your search ***', [bundle.Lines.Count]));
+        end;
+      end;
       bundle.Free;
     end
     else
@@ -120,13 +143,14 @@ begin
   end;
 end;
 
-procedure TReplayThread.Add(const ANick: String; const AList: TStringList);
+procedure TReplayThread.Add(const AType: TBundleType; const ANick: String;
+  const AList: TStringList);
 var
   bundle: TReplayBundle;
 begin
   FCriticalSection.Acquire;
   try
-    bundle:= TReplayBundle.Create(ANick, AList);
+    bundle:= TReplayBundle.Create(AType, ANick, AList);
     debug(Format('Adding %d lines for "%s".', [
       AList.Count,
       ANick

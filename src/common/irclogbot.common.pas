@@ -9,7 +9,7 @@ uses
 ;
 
 const
-  cVersion = 'v0.0.3';
+  cVersion = 'v0.0.4';
   cRepoURL = 'https://github.com/ObjectPascal-Community/pasirclogbot';
 
 var
@@ -32,16 +32,16 @@ var
 
 procedure log(const ALevel: TLogLevel; const AMessage: String);
 begin
-  dateTimeStr:= FormatDateTime('yyyy/mm/dd hh:nn:ss.zzz: ', Now);
+  dateTimeStr:= FormatDateTime('yyyy/mm/dd hh:nn:ss.zzz ', Now);
   case ALevel of
     llInfo:begin
-      WriteLn(dateTimeStr, '[INF]: ', AMessage);
+      WriteLn(dateTimeStr, '[INF] ', AMessage);
     end;
     llError:begin
-      WriteLn(dateTimeStr, '[ERR]: ', AMessage);
+      WriteLn(dateTimeStr, '[ERR] ', AMessage);
     end;
     llDebug:begin
-      WriteLn(dateTimeStr, '[DBG]: ', AMessage);
+      WriteLn(dateTimeStr, '[DBG] ', AMessage);
     end;
   end;
 

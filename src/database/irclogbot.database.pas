@@ -90,7 +90,6 @@ end;
 
 function TDatabase.Get(ACount: Integer): TStringList;
 var
-  timestamp: TDateTime;
   date, channel, nick, message: String;
 begin
   Result:= TStringList.Create;
@@ -109,11 +108,7 @@ begin
         begin
           FQuery.First;
           repeat
-            timestamp:= FQuery.FieldByName('timestamp').AsDateTime;
-            date:= FormatDateTime(
-              DefaultFormatSettings.ShortDateFormat + ' ' + DefaultFormatSettings.LongTimeFormat,
-              timestamp
-            );
+            date:= FQuery.FieldByName('timestamp').AsString;
             channel:= FQuery.FieldByName('channel').AsString;
             nick:= FQuery.FieldByName('nick').AsString;
             message:= FQuery.FieldByName('message').AsString;

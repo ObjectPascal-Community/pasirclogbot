@@ -132,6 +132,7 @@ begin
   //debug('Short Date: ' + DefaultFormatSettings.ShortDateFormat);
   //debug('Short Time: ' + DefaultFormatSettings.ShortTimeFormat);
   //debug('Date Sep: ' + DefaultFormatSettings.DateSeparator);
+  debug('Setting Date and Time formats');
   DefaultFormatSettings.ShortDateFormat:= 'yyyy/mm/dd';
   DefaultFormatSettings.DateSeparator:= '/';
   debug(Format('Attempting to read config from: "%s"...', [FConfigFile]));

@@ -39,6 +39,9 @@ PARAMS:
     -d/--debug        Turn debug On. (default: Off)
 ```
 
+> [!NOTE]
+> For Windows users you'll find `SQLite` `.dll` files under the [windows-dll](windows-dll) folder.
+
 ## About the author
 
 I'm usually on `irc.libera.chat` on the `#objectpascal`, `#lazarus` and `#pascal` channels. On `IRC` I use the nick name `[Batch]`.

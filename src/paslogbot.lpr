@@ -152,7 +152,7 @@ begin
   debug('Creating IRC client...');
   FIRCLogBot:= TIRCLogBot.Create(config);
   debug('Successfully created IRC client.');
-  debug('Starting...');
+  info('Starting...');
   FIRCLogBot.Run;
   while not Terminated do
   begin
@@ -161,7 +161,7 @@ begin
   FIRCLogBot.Shutdown;
   FIRCLogBot.Free;
   config.Free;
-  debug('Exiting.');
+  info('Exiting.');
   // stop program loop
   //Terminate;
 end;

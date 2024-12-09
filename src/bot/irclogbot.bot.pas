@@ -41,6 +41,7 @@ type
     procedure Help(const ATarget: String);
     procedure Version(const ATarget: String);
     procedure Replay(const ATarget: String; ACount: Integer);
+    procedure Search(const ATarget, AQuery: String);
   protected
   public
     constructor Create(const AConfig: TBotConfig);
@@ -73,7 +74,7 @@ end;
 procedure TIRCLogBot.OnNotice(ASender: TIdContext; const ANickname, AHost,
   ATarget, ANotice: String);
 begin
-  debug('>> NOTICE: <%s:%s> (%s) "%s".', [
+  info('>> NOTICE: <%s:%s> (%s) "%s".', [
     ANickname,
     AHost,
     ATarget,
@@ -84,7 +85,7 @@ end;
 procedure TIRCLogBot.OnServerQuit(ASender: TIdContext; const ANickname, AHost,
   AServer, AReason: String);
 begin
-  debug('>> QUIT: <%s:%s> %s "%s".',[
+  info('>> QUIT: <%s:%s> %s "%s".',[
     ANickname,
     AHost,
     AServer,
@@ -95,7 +96,7 @@ end;
 procedure TIRCLogBot.OnJoin(ASender: TIdContext; const ANickname, AHost,
   AChannel: String);
 begin
-  debug('>> JOIN: <%s:%s> %s.', [
+  info('>> JOIN: <%s:%s> %s.', [
     ANickname,
     AHost,
     AChannel
@@ -114,7 +115,7 @@ var
   strings: TStringArray;
   count: Integer;
 begin
-  debug('>> PRIVMSG: <%s:%s>(%s) "%s".', [
+  info('>> PRIVMSG: <%s:%s>(%s) "%s".', [
     ANickname,
     AHost,
     ATarget,
@@ -169,6 +170,19 @@ begin
         end;
         exit;
       end;
+      if Pos('.search', Trim(AMessage)) = 1 then
+      begin
+        strings:= AMessage.Split([' ']);
+        if Length(strings[1]) > 2 then
+        begin
+          Search(ANickname, strings[1]);
+        end
+        else
+        begin
+          FIRC.Say(ANickname, 'I will only search if query is 3 characters or more.');
+        end;
+        exit;
+      end;
     end
     else
     begin
@@ -185,13 +199,18 @@ begin
   FIRC.Say(ATarget, 'Commands:');
   FIRC.Say(ATarget, '.help           - This help information.');
   FIRC.Say(ATarget, '.version        - Version and info about the bot.');
-  FIRC.Say(ATarget, '.replay [count] - Raplays last <count> lines. Default is last 10 lines.');
+  FIRC.Say(ATarget, '.replay [count] - Replays last <count> lines. Default is last 10 lines.');
+  Sleep(5000);
+  FIRC.Say(ATarget, '.search [query] - Searches for <query> in the logs.');
+  FIRC.Say(ATarget, '                  Will only search if <query> is 3 characters or more.');
+  FIRC.Say(ATarget, '                  Will only use the first word after the command. No multi word search(yet?).');
+  FIRC.Say(ATarget, '                  Returns the last 10 lines with the searched <query>.');
 end;
 
 procedure TIRCLogBot.Version(const ATarget: String);
 begin
   debug('Version command.');
-  FIRC.Say(ATarget, Format('Version: %s, %s',[
+  FIRC.Say(ATarget, Format('Version: %s; Source: %s',[
     cVersion,
     cRepoURL
   ]));
@@ -208,10 +227,27 @@ begin
   lines.Free;
 end;
 
+procedure TIRCLogBot.Search(const ATarget, AQuery: String);
+var
+  lines: TStringList;
+begin
+  debug('Search command: "%s"', [AQuery]);
+  lines:= FDB.Search(AQuery);
+  if lines.Count > 0 then
+  begin
+    FReplay.Add(ATarget, lines);
+  end
+  else
+  begin
+    FIRC.Say(ATarget, 'Your query returned no lines.');
+  end;
+  lines.Free;
+end;
+
 procedure TIRCLogBot.Run;
 begin
   try
-    debug('Connecting...');
+    info('Connecting...');
     FIRC.Connect;
   except
     on e:Exception do
@@ -220,7 +256,7 @@ begin
     end;
   end;
   try
-    debug('Joining channel: "%s"...', [FConfig.Channel]);
+    info('Joining channel: "%s"...', [FConfig.Channel]);
     FIRC.Join(FConfig.Channel);
   except
     on e:Exception do
@@ -234,13 +270,13 @@ end;
 
 procedure TIRCLogBot.Shutdown;
 begin
-  debug('Terminating Replay Thread.');
+  info('Terminating Replay Thread.');
   FReplay.Terminate;
-  debug('Waiting for Replay Thread to terminate...');
+  info('Waiting for Replay Thread to terminate...');
   FReplay.WaitFor;
   if FIRC.Connected then
   begin
-    debug('Disconnecting...');
+    info('Disconnecting...');
     try
       if FJoinedChannel then FIRC.Say(FConfig.Channel, 'Boss sais I need to have a wee nap. See Y''All later...');
       FIRC.Disconnect('ZzZzZzZzZzZzZzZz...');

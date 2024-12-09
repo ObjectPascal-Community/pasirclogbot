@@ -110,6 +110,7 @@ begin
         end;
       end;
       FIRC.Say(bundle.Nick, Format('*** End of the last %d lines ***', [bundle.Lines.Count]));
+      bundle.Free;
     end
     else
     begin

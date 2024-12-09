@@ -25,11 +25,12 @@ type
     procedure SetupTables;
   protected
   public
-    constructor Create(ADatabaseFile: String);
+    constructor Create(const ADatabaseFile: String);
     destructor Destroy; override;
 
-    procedure Insert(ANickName, AChannel, AMessage: String);
-    function Get(ACount: Integer): TStringList;
+    procedure Insert(const ANickName, AChannel, AMessage: String);
+    function Get(const ACount: Integer): TStringList;
+    function Search(const AQuery: String): TStringList;
   published
   end;
 
@@ -60,7 +61,7 @@ begin
   end;
 end;
 
-procedure TDatabase.Insert(ANickName, AChannel, AMessage: String);
+procedure TDatabase.Insert(const ANickName, AChannel, AMessage: String);
 begin
   FCriticalSection.Acquire;
   try
@@ -88,14 +89,14 @@ begin
   end;
 end;
 
-function TDatabase.Get(ACount: Integer): TStringList;
+function TDatabase.Get(const ACount: Integer): TStringList;
 var
   date, channel, nick, message: String;
 begin
   Result:= TStringList.Create;
   FCriticalSection.Acquire;
   try
-    debug('Starting transaction.');
+    debug('Starting GET transaction.');
     FTransaction.StartTransaction;
     try
       try
@@ -130,7 +131,7 @@ begin
         end;
       finally
         FTransaction.EndTransaction;
-        debug('Transaction ended.');
+        debug('Transaction GET ended.');
       end;
     except
       on e:Exception do
@@ -144,7 +145,67 @@ begin
   end;
 end;
 
-constructor TDatabase.Create(ADatabaseFile: String);
+function TDatabase.Search(const AQuery: String): TStringList;
+var
+  date, channel, nick, message: String;
+begin
+  Result:= TStringList.Create;
+  FCriticalSection.Acquire;
+  try
+    debug('Starting SEARCH transaction.');
+    FTransaction.StartTransaction;
+    try
+      try
+        FQuery.SQL.Text:= Format(
+          'SELECT timestamp, nick, channel, message ' +
+          'FROM logs ' +
+          'WHERE message LIKE %s ' +
+          'ORDER BY id DESC ' +
+          'LIMIT %d',
+          [QuotedStr('%' + AQuery + '%'), 10]
+        );
+        FQuery.Open;
+        if FQuery.RecordCount > 0 then
+        begin
+          FQuery.First;
+          repeat
+            date:= FQuery.FieldByName('timestamp').AsString;
+            channel:= FQuery.FieldByName('channel').AsString;
+            nick:= FQuery.FieldByName('nick').AsString;
+            message:= FQuery.FieldByName('message').AsString;
+            debug('Retrieving: %s [%s] %s: %s.', [
+              date,
+              channel,
+              nick,
+              message
+            ]);
+            Result.Insert(0, Format('%s [%s] %s: %s',[
+              date,
+              channel,
+              nick,
+              message
+            ]));
+            FQuery.Next;
+          until FQuery.EOF;
+          FQuery.Close;
+        end;
+      finally
+        FTransaction.EndTransaction;
+        debug('Transaction SEARCH ended.');
+      end;
+    except
+      on e:Exception do
+      begin
+        FTransaction.Rollback;
+        debug('Error retrieving lines: "%s".', [e.Message]);
+      end;
+    end;
+  finally
+    FCriticalSection.Release;
+  end;
+end;
+
+constructor TDatabase.Create(const ADatabaseFile: String);
 begin
   FCriticalSection:= TCriticalSection.Create;
   FConnection:= TSQLite3Connection.Create(nil);

@@ -11,6 +11,7 @@ uses
 , IdIRC
 , IRCLogBot.Config
 , IRCLogBot.Database
+, IRCLogBot.Replay
 ;
 
 type
@@ -23,6 +24,8 @@ type
     FConfig: TBotConfig;
 
     FDB: TDatabase;
+
+    FReplay: TReplayThread;
 
     procedure OnConnected(Sender: TObject);
     procedure OnDisconnected(Sender: TObject);
@@ -51,7 +54,6 @@ implementation
 
 uses
   IRCLogBot.Common
-, IRCLogBot.Replay
 ;
 
 
@@ -59,18 +61,18 @@ uses
 
 procedure TIRCLogBot.OnConnected(Sender: TObject);
 begin
-  debug('Connected to server');
+  debug('Connected to server.');
 end;
 
 procedure TIRCLogBot.OnDisconnected(Sender: TObject);
 begin
-  debug('Disconnected from server');
+  debug('Disconnected from server.');
 end;
 
 procedure TIRCLogBot.OnNotice(ASender: TIdContext; const ANickname, AHost,
   ATarget, ANotice: String);
 begin
-  debug('>> NOTICE: <%s:%s> (%s) "%s"', [
+  debug('>> NOTICE: <%s:%s> (%s) "%s".', [
     ANickname,
     AHost,
     ATarget,
@@ -81,7 +83,7 @@ end;
 procedure TIRCLogBot.OnServerQuit(ASender: TIdContext; const ANickname, AHost,
   AServer, AReason: String);
 begin
-  debug('>> QUIT: <%s:%s> %s "%s"',[
+  debug('>> QUIT: <%s:%s> %s "%s".',[
     ANickname,
     AHost,
     AServer,
@@ -92,14 +94,14 @@ end;
 procedure TIRCLogBot.OnJoin(ASender: TIdContext; const ANickname, AHost,
   AChannel: String);
 begin
-  debug('>> JOIN: <%s:%s> %s', [
+  debug('>> JOIN: <%s:%s> %s.', [
     ANickname,
     AHost,
     AChannel
   ]);
   if (ANickname = FConfig.NickName) and (AChannel = FConfig.Channel) then
   begin
-    debug('Successfully joined my channel');
+    debug('Successfully joined my channel.');
     FJoinedChannel:= True;
     FIRC.Say(AChannel, 'I have arrived!!! TADAAAAA!!! Send me a private message with ".help" to see what I can do for you.');
   end;
@@ -111,7 +113,7 @@ var
   strings: TStringArray;
   count: Integer;
 begin
-  debug('>> PRIVMSG: <%s:%s>(%s) "%s"', [
+  debug('>> PRIVMSG: <%s:%s>(%s) "%s".', [
     ANickname,
     AHost,
     ATarget,
@@ -119,7 +121,7 @@ begin
   ]);
   if ATarget = FConfig.Channel then
   begin
-    debug('Inserting: %s, %s, %s, %s', [
+    debug('Inserting: %s, %s, %s, %s.', [
       ANickname,
       AHost,
       ATarget,
@@ -175,46 +177,51 @@ procedure TIRCLogBot.Help(const ATarget: String);
 begin
   debug('Help command.');
   FIRC.Say(ATarget, 'Commands:');
-  FIRC.Say(ATarget, '.help - This help information.');
+  FIRC.Say(ATarget, '.help           - This help information.');
   FIRC.Say(ATarget, '.replay [count] - Raplays last <count> lines. Default is last 10 lines.');
 end;
 
 procedure TIRCLogBot.Replay(const ATarget: String; ACount: Integer);
 var
-  replayThread: TReplayThread;
   lines: TStringList;
 begin
   debug('Replay command(%d).', [ACount]);
   lines:= FDB.Get(ACount);
-  debug('Lines: %d', [lines.Count]);
-  replayThread:= TReplayThread.Create(FIRC, ATarget, lines);
+  debug('Lines: %d.', [lines.Count]);
+  FReplay.Add(ATarget, lines);
   lines.Free;
 end;
 
 procedure TIRCLogBot.Run;
 begin
-  debug('Connecting...');
   try
+    debug('Connecting...');
     FIRC.Connect;
   except
     on e:Exception do
     begin
-      debug('Error connecting: %s', [e.Message]);
+      debug('Error connecting: "%s".', [e.Message]);
     end;
   end;
-  debug('Joining channel: "%s"...', [FConfig.Channel]);
   try
+    debug('Joining channel: "%s"...', [FConfig.Channel]);
     FIRC.Join(FConfig.Channel);
   except
     on e:Exception do
     begin
-      debug('Error joining: %s', [e.Message]);
+      debug('Error joining: "%s".', [e.Message]);
     end;
   end;
+  debug('Starting Replay Thread.');
+  FReplay:= TReplayThread.Create(FIRC);
 end;
 
 procedure TIRCLogBot.Shutdown;
 begin
+  debug('Terminating Replay Thread.');
+  FReplay.Terminate;
+  debug('Waiting for Replay Thread to terminate...');
+  FReplay.WaitFor;
   if FIRC.Connected then
   begin
     debug('Disconnecting...');
@@ -224,7 +231,7 @@ begin
     except
       on e:Exception do
       begin
-        debug('Error: %s', [e.Message]);
+        debug('Error disconnecting: "%s".', [e.Message]);
       end;
     end;
   end;
@@ -257,7 +264,7 @@ begin
   except
     on e:Exception do
     begin
-      debug('Error creating db: ', [e.Message]);
+      debug('Error creating db: "%s".', [e.Message]);
     end;
   end;
 end;

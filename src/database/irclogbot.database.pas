@@ -55,7 +55,7 @@ begin
     on e:Exception do
     begin
       FTransaction.Rollback;
-      debug('Error setting tables: %s', [e.Message]);
+      debug('Error setting tables: "%s".', [e.Message]);
     end;
   end;
 end;
@@ -68,7 +68,7 @@ begin
       debug('Starting Transaction...');
       FTransaction.StartTransaction;
       try
-        debug('Inserting: <%s> [%s] "%s"', [ANickName, AChannel, AMessage]);
+        debug('Inserting: <%s> [%s] "%s".', [ANickName, AChannel, AMessage]);
         FConnection.ExecuteDirect(Format(
           'INSERT INTO logs (nick, channel, message) VALUES (%s, %s, %s)',
           [QuotedStr(ANickName), QuotedStr(AChannel), QuotedStr(AMessage)]));
@@ -80,7 +80,7 @@ begin
       on e:Exception do
       begin
         FTransaction.Rollback;
-        debug('Error inserting message: %s', [e.Message]);
+        debug('Error inserting message: "%s".', [e.Message]);
       end;
     end;
   finally
@@ -112,7 +112,7 @@ begin
             channel:= FQuery.FieldByName('channel').AsString;
             nick:= FQuery.FieldByName('nick').AsString;
             message:= FQuery.FieldByName('message').AsString;
-            debug('Retrieving: %s [%s] %s: %s', [
+            debug('Retrieving: %s [%s] %s: %s.', [
               date,
               channel,
               nick,
@@ -136,7 +136,7 @@ begin
       on e:Exception do
       begin
         FTransaction.Rollback;
-        debug('Error retrieving lines: %s', [e.Message]);
+        debug('Error retrieving lines: "%s".', [e.Message]);
       end;
     end;
   finally

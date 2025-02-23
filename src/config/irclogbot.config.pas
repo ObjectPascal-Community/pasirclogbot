@@ -23,6 +23,7 @@ type
     FIRCUserName: String;
     FIRCRealName: String;
     FIRCChannel: String;
+    FIRCUseUTF8: Boolean;
 
     FDBFile: String;
   protected
@@ -50,6 +51,9 @@ type
     property Channel: String
       read FIRCChannel
       write FIRCChannel;
+    property UseUTF8: Boolean
+      read FIRCUseUTF8
+      write FIRCUseUTF8;
 
     property Database: String
       read FDBFile
@@ -70,6 +74,7 @@ begin
   FIRCUserName:= '';
   FIRCRealName:= '';
   FIRCChannel:= '';
+  FIRCUseUTF8:= False;
 end;
 
 destructor TBotConfig.Destroy;
@@ -89,6 +94,7 @@ begin
       FIRCUserName:= FINI.ReadString('IRC', 'UserName', '');
       FIRCRealName:= FINI.ReadString('IRC', 'RealName', '');
       FIRCChannel:= FINI.ReadString('IRC', 'Channel', '');
+      FIRCUseUTF8:= FINI.ReadBool('IRC', 'UseUTF8', False);
 
       FDBFile:= FINI.ReadString('DB', 'File', 'paslogbot.db');
 

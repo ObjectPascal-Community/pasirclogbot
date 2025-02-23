@@ -7,7 +7,10 @@ interface
 uses
   Classes
 , SysUtils
+, IdGlobal
 , IdContext
+, IdComponent
+, IdCmdTCPClient
 , IdIRC
 , IRCLogBot.Config
 , IRCLogBot.Database
@@ -37,6 +40,14 @@ type
       AChannel: String);
     procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost,
       ATarget, AMessage: String);
+    procedure OnISupport(ASender: TIdContext; AParameters: TStrings);
+    procedure OnStatus(ASender: TObject; const AStatus: TIdStatus;
+      const AStatusText: string);
+    procedure OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
+    procedure OnBeforeCommandHandler(ASender: TIdCmdTCPClient;
+      var AData: string; AContext: TIdContext);
+    procedure OnAfterCommandHandler(ASender: TIdCmdTCPClient;
+      AContext: TIdContext);
 
     procedure Help(const ATarget: String);
     procedure Version(const ATarget: String);
@@ -103,6 +114,12 @@ begin
   ]);
   if (ANickname = FConfig.NickName) and (AChannel = FConfig.Channel) then
   begin
+    if FConfig.UseUTF8 then
+    begin
+      debug('Using UTF8');
+      FIRC.IOHandler.DefStringEncoding:= IndyTextEncoding_UTF8;
+    end;
+
     debug('Successfully joined my channel.');
     FJoinedChannel:= True;
     FIRC.Say(AChannel, 'I have arrived!!! TADAAAAA!!! Send me a private message with ".help" to see what I can do for you.');
@@ -192,6 +209,38 @@ begin
     end;
     exit;
   end;
+end;
+
+procedure TIRCLogBot.OnISupport(ASender: TIdContext; AParameters: TStrings);
+begin
+  debug('I Support: %s', [AParameters]);
+end;
+
+procedure TIRCLogBot.OnStatus(ASender: TObject; const AStatus: TIdStatus;
+  const AStatusText: string);
+begin
+  debug('Status: (%d) %s', [Ord(AStatus), AStatusText]);
+end;
+
+procedure TIRCLogBot.OnRaw(ASender: TIdContext; AIn: Boolean;
+  const AMessage: String);
+begin
+  if AIn then
+    debug('RAW(In ): "%s"', [AMessage])
+  else
+    debug('RAW(Out): "%s"', [AMessage]);
+end;
+
+procedure TIRCLogBot.OnBeforeCommandHandler(ASender: TIdCmdTCPClient;
+  var AData: string; AContext: TIdContext);
+begin
+  debug('Before Command: %s', [AData]);
+end;
+
+procedure TIRCLogBot.OnAfterCommandHandler(ASender: TIdCmdTCPClient;
+  AContext: TIdContext);
+begin
+  debug('After Command');
 end;
 
 procedure TIRCLogBot.Help(const ATarget: String);
@@ -304,12 +353,24 @@ begin
   FIRC.RealName:= FConfig.RealName;
   FIRC.Host:= FConfig.Host;
   FIRC.Port:= FConfig.Port;
+  { #todo 100 -ogcarreno : Need to revisit these }
+  //FIRC.Replies.ClientInfo:= 'PasLogBot';
+  //FIRC.Replies.Finger:= 'paslogbot';
+  //FIRC.Replies.UserInfo:= 'paslogbot';
+  //FIRC.Replies.Version:= cVersion;
+
+  // Events
   FIRC.OnConnected:= @OnConnected;
   FIRC.OnDisconnected:= @OnDisconnected;
   FIRC.OnServerQuit:= @OnServerQuit;
   FIRC.OnJoin:= @OnJoin;
   FIRC.OnNotice:= @OnNotice;
   FIRC.OnPrivateMessage:= @OnPrivateMessage;
+  //FIRC.OnISupport:= @OnISupport;
+  //FIRC.OnStatus:= @OnStatus;
+  //FIRC.OnRaw:= @OnRaw;
+  //FIRC.OnBeforeCommandHandler:= @OnBeforeCommandHandler;
+  //FIRC.OnAfterCommandHandler:= @OnAfterCommandHandler;
 
   // Setup Database
   FDB:= TDatabase.Create(FConfig.Database);

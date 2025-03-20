@@ -60,6 +60,7 @@ begin
   act.sa_flags:= 0;
 
   // Set up signal handlers
+  //fpSignal(SIGTERM, @SignalHandler); // Need to investigate the params for this
   fpSigAction(SIGTERM, @act, nil);
   fpSigAction(SIGINT, @act, nil);
   fpSigAction(SIGHUP, @act, nil);

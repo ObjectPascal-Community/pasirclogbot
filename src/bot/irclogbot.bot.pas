@@ -213,7 +213,7 @@ end;
 
 procedure TIRCLogBot.OnISupport(ASender: TIdContext; AParameters: TStrings);
 begin
-  debug('I Support: %s', [AParameters]);
+  debug('I Support: %s', [AParameters.Text]);
 end;
 
 procedure TIRCLogBot.OnStatus(ASender: TObject; const AStatus: TIdStatus;
@@ -366,9 +366,9 @@ begin
   FIRC.OnJoin:= @OnJoin;
   FIRC.OnNotice:= @OnNotice;
   FIRC.OnPrivateMessage:= @OnPrivateMessage;
-  //FIRC.OnISupport:= @OnISupport;
-  //FIRC.OnStatus:= @OnStatus;
-  //FIRC.OnRaw:= @OnRaw;
+  FIRC.OnISupport:= @OnISupport;
+  FIRC.OnStatus:= @OnStatus;
+  FIRC.OnRaw:= @OnRaw;
   //FIRC.OnBeforeCommandHandler:= @OnBeforeCommandHandler;
   //FIRC.OnAfterCommandHandler:= @OnAfterCommandHandler;
 

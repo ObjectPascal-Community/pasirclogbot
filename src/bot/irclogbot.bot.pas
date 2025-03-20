@@ -117,6 +117,7 @@ begin
     if FConfig.UseUTF8 then
     begin
       debug('Using UTF8');
+      FIRC.IOHandler.DefAnsiEncoding:= IndyTextEncoding_UTF8;
       FIRC.IOHandler.DefStringEncoding:= IndyTextEncoding_UTF8;
     end;
 
